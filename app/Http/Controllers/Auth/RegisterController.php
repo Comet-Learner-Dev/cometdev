@@ -3,10 +3,16 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Notifications\AccountConfirmationNotification;
 use App\Providers\RouteServiceProvider;
 use App\Models\User;
 use Illuminate\Foundation\Auth\RegistersUsers;
+use Illuminate\Http\Request;
+//use Illuminate\Notifications\Notification;
+use Illuminate\Support\Facades\Notification;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Validator;
 
 class RegisterController extends Controller
@@ -72,4 +78,32 @@ class RegisterController extends Controller
             'password' => Hash::make($data['password']),
         ]);
     }
+
+    //After registration instantly user will logout and back to login page
+
+    /**
+     * The user has been registered.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @param  mixed  $user
+     * @return mixed
+     */
+    protected function registered(Request $request, $user)
+    {
+       // new AccountConfirmationNotification($user) is called instance
+        //we can send notification in two ways
+
+        //Mail::to() ->send();
+
+        //one way
+        //$user ->notify(new AccountConfirmationNotification($user));    // one system  I want to send a notification for a user who has do registration instanstly
+
+        //Another way
+        Notification::send($user, new AccountConfirmationNotification($user));
+
+        Auth::logout();
+        return redirect() -> route('login');
+
+    }
+
 }
